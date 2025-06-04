@@ -1,10 +1,27 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import TopNav from '@/components/TopNav';
 import TickerTable from '@/components/TickerTable';
 import LoginSidebar from "@/pages/Auth/LoginSidebar";
 import { Outlet } from 'react-router-dom';
+import socket from '@/socket'; // ✅ socket.js 경로에 맞게 설정
 
 const Layout = () => {
+  const user = JSON.parse(localStorage.getItem("user"));
+
+  useEffect(() => {
+    if (user?._id) {
+      socket.emit("join", user._id); // ✅ 서버에 소켓 방 참여 요청
+    }
+
+    socket.on("notification", (data) => {
+      alert(`🔔 ${data.message}`);
+    });
+
+    return () => {
+      socket.off("notification");
+    };
+  }, [user]);
+
   return (
     <div className="min-h-screen bg-gray-100">
       {/* ✅ 상단 네비게이션 */}
