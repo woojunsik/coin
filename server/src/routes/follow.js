@@ -2,7 +2,7 @@ const express = require('express');
 const verifyToken = require('../middleware/verifyToken');
 const Follow = require('../models/Follow');
 const User = require('../models/User');
-
+const { getIO } = require("../socket");
 const router = express.Router();
 
 // ✅ [POST] 팔로우 하기
@@ -32,6 +32,11 @@ router.post('/:targetId', verifyToken, async (req, res) => {
     // ✅ 통계 업데이트
     await User.findByIdAndUpdate(targetId, { $inc: { followersCount: 1 } });
     await User.findByIdAndUpdate(req.user._id, { $inc: { followingCount: 1 } });
+
+        getIO().to(targetId.toString()).emit("notification", {
+      message: `${req.user.nickname}님이 당신을 팔로우했습니다.`,
+    });
+
 
     res.json({ message: '팔로우 완료' });
   } catch (err) {
