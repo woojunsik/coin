@@ -1,0 +1,9 @@
+.ticker-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.ticker-table th,
+.ticker-table td {
+  padding: 8px;
+  border: 1px solid #ddd;
+}
