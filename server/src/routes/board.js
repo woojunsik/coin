@@ -6,6 +6,7 @@ const verifyToken = require("../middleware/verifyToken");
 const mongoose = require("mongoose");
 const jwt = require("jsonwebtoken");
 const { getIO } = require("../socket");
+const Notification = require("../models/Notification");
 
 const getUserInfo = async (id) => {
   try {
@@ -190,13 +191,18 @@ router.post("/:id/comment", verifyToken, async (req, res) => {
     post.comments.push(newComment);
     await post.save();
 
-    // ✅ 댓글 알림 보내기 (본인 댓글이면 제외)
     if (String(post.writer) !== String(req.user._id)) {
-      getIO()
-        .to(post.writer.toString())
-        .emit("notification", {
-          message: `${req.user.nickname}님이 당신의 게시글에 댓글을 남겼습니다.`,
-        });
+      await Notification.create({
+        recipient: post.writer,
+        sender: req.user._id,
+        type: "comment",
+        message: `${req.user.nickname}님이 당신의 게시글에 댓글을 남겼습니다.`,
+        url: `/board/${post._id}`,
+      });
+
+      getIO().to(post.writer.toString()).emit("notification", {
+        message: `${req.user.nickname}님이 당신의 게시글에 댓글을 남겼습니다.`,
+      });
     }
 
     const user = await getUserInfo(req.user._id);
@@ -205,6 +211,8 @@ router.post("/:id/comment", verifyToken, async (req, res) => {
     res.status(500).json({ message: "댓글 등록 실패" });
   }
 });
+
+
 
 // 댓글 수정
 router.put("/:postId/comment/:commentId", verifyToken, async (req, res) => {
@@ -247,8 +255,15 @@ router.post("/:id/like", verifyToken, async (req, res) => {
       post.likedUsers.push(userId);
       post.likes += 1;
 
-      // ✅ 좋아요 알림 전송 (자기 글 아니면)
       if (String(post.writer) !== userId) {
+        await Notification.create({
+          recipient: post.writer,
+          sender: req.user._id,
+          type: "postLike",
+          message: `${req.user.nickname}님이 당신의 게시글을 좋아합니다.`,
+          url: `/board/${post._id}`,
+        });
+
         getIO().to(post.writer.toString()).emit("notification", {
           message: `${req.user.nickname}님이 당신의 게시글을 좋아합니다.`,
         });
@@ -266,6 +281,7 @@ router.post("/:id/like", verifyToken, async (req, res) => {
 });
 
 
+
 // 댓글 좋아요
 router.post("/:id/comment/:commentId/like", verifyToken, async (req, res) => {
   try {
@@ -276,23 +292,26 @@ router.post("/:id/comment/:commentId/like", verifyToken, async (req, res) => {
     const userId = req.user._id.toString();
     if (!comment.likedUsers) comment.likedUsers = [];
 
-    const index = comment.likedUsers.findIndex(
-      (uid) => uid.toString() === userId
-    );
-
+    const index = comment.likedUsers.findIndex((uid) => uid.toString() === userId);
     const isLike = index === -1;
 
     if (isLike) {
       comment.likedUsers.push(userId);
       comment.likes = (comment.likes || 0) + 1;
 
-      // ✅ 알림 전송: 댓글 작성자가 본인이 아닐 경우
       if (String(comment.writer) !== userId) {
+        await Notification.create({
+          recipient: comment.writer,
+          sender: req.user._id,
+          type: "commentLike",
+          message: `${req.user.nickname}님이 당신의 댓글을 좋아합니다.`,
+          url: `/board/${post._id}`,
+        });
+
         getIO().to(comment.writer.toString()).emit("notification", {
           message: `${req.user.nickname}님이 당신의 댓글을 좋아합니다.`,
         });
       }
-
     } else {
       comment.likedUsers.splice(index, 1);
       comment.likes = Math.max(0, (comment.likes || 1) - 1);
