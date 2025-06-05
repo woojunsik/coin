@@ -1,10 +1,11 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
+import React from "react";
+import { Link } from "react-router-dom";
+import NotificationDropdown from "@/components/cccccccNotificationDropdown"; // ✅ 경로 확인
 
 const TopNav = () => {
   return (
     <div className="border-b bg-white">
-      {/* 🔵 상단: 로고 + 검색창 */} 
+      {/* 🔵 상단: 로고 + 검색창 */}
       <div className="relative max-w-6xl mx-auto flex items-center px-6 pt-6 pb-3">
         {/* 🔹 로고 (왼쪽) */}
         <Link
@@ -26,28 +27,34 @@ const TopNav = () => {
           </div>
         </div>
 
-        {/* 🧑 마이페이지 이동 */}
+        {/* 🔔 알림 드롭다운 (오른쪽) */}
         <div className="ml-auto">
-          <Link
-            to="/mypage"
-            className="text-sm bg-blue-800 text-white px-4 py-2 rounded hover:bg-purple-700"
-          >
-            마이페이지
-          </Link>
+          <NotificationDropdown />
         </div>
       </div>
 
       {/* 🔵 하단 메뉴바 (고정) */}
       <div className="bg-blue-800 text-white text-sm">
         <div className="max-w-6xl mx-auto flex items-center gap-8 px-6 py-2">
-          <Link to="/" className="hover:underline">홈</Link>
-          <Link to="/notice" className="hover:underline">공지사항</Link>
-          <Link to="/ranking" className="hover:underline">자산랭킹</Link>
-          <Link to="/profit" className="hover:underline">수익 인증</Link>
-          <Link to="/board" className="hover:underline">자유게시판</Link>
+          <Link to="/" className="hover:underline">
+            홈
+          </Link>
+          <Link to="/notice" className="hover:underline">
+            공지사항
+          </Link>
+          <Link to="/ranking" className="hover:underline">
+            자산랭킹
+          </Link>
+          <Link to="/profit" className="hover:underline">
+            수익 인증
+          </Link>
+          <Link to="/board" className="hover:underline">
+            자유게시판
+          </Link>
 
           <span className="ml-auto text-xs text-gray-300">
-            어제 <span className="text-green-300 font-bold">919,743</span>개 게시글 등록
+            어제 <span className="text-green-300 font-bold">919,743</span>개
+            게시글 등록
           </span>
         </div>
       </div>
